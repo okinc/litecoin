@@ -10,6 +10,7 @@
 #include "net.h"
 #include "script.h"
 #include "scrypt.h"
+#include "address-monitor/address-monitor.h"
 
 #include <list>
 
@@ -2249,6 +2250,8 @@ extern CCoinsViewCache *pcoinsTip;
 
 /** Global variable that points to the active block tree (protected by cs_main) */
 extern CBlockTreeDB *pblocktree;
+
+extern AddressMonitor *paddressMonitor;
 
 struct CBlockTemplate
 {

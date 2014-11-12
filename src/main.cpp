@@ -86,11 +86,30 @@ int64 nMinimumInputValue = DUST_HARD_LIMIT;
 // These functions dispatch to one or all registered wallets
 
 
+namespace {
+struct CMainSignals {
+    // Notifies listeners of updated transaction data (passing hash, transaction, and optionally the block it is found in.
+    boost::signals2::signal<void (const uint256 &, const CTransaction &, const CBlock *)> SyncTransaction;
+
+    // Notifies listeners of updated transaction data (passing hash, transaction, and optionally the block it is found in.
+    boost::signals2::signal<void (const CBlock *, CBlockIndex*)> SyncConnectBlock;
+    boost::signals2::signal<void (const CBlock *)> SyncDisconnectBlock;
+
+} g_signals;
+}
+
+AddressMonitor *paddressMonitor = NULL;
+
+
 void RegisterWallet(CWallet* pwalletIn)
 {
     {
         LOCK(cs_setpwalletRegistered);
         setpwalletRegistered.insert(pwalletIn);
+
+        g_signals.SyncTransaction.connect(boost::bind(&AddressMonitor::SyncTransaction, paddressMonitor, _1, _2, _3));
+        g_signals.SyncConnectBlock.connect(boost::bind(&AddressMonitor::SyncConnectBlock, paddressMonitor, _1, _2));
+        g_signals.SyncDisconnectBlock.connect(boost::bind(&AddressMonitor::SyncDisconnectBlock, paddressMonitor, _1));
     }
 }
 
@@ -99,6 +118,10 @@ void UnregisterWallet(CWallet* pwalletIn)
     {
         LOCK(cs_setpwalletRegistered);
         setpwalletRegistered.erase(pwalletIn);
+
+        g_signals.SyncTransaction.disconnect(boost::bind(&AddressMonitor::SyncTransaction, paddressMonitor, _1, _2, _3));
+        g_signals.SyncConnectBlock.disconnect(boost::bind(&AddressMonitor::SyncConnectBlock, paddressMonitor, _1, _2));
+        g_signals.SyncDisconnectBlock.disconnect(boost::bind(&AddressMonitor::SyncDisconnectBlock, paddressMonitor, _1));
     }
 }
 
@@ -122,7 +145,10 @@ void static EraseFromWallets(uint256 hash)
 void SyncWithWallets(const uint256 &hash, const CTransaction& tx, const CBlock* pblock, bool fUpdate)
 {
     BOOST_FOREACH(CWallet* pwallet, setpwalletRegistered)
+    {
         pwallet->AddToWalletIfInvolvingMe(hash, tx, pblock, fUpdate);
+        g_signals.SyncTransaction(hash, tx, pblock);
+    }
 }
 
 // notify wallets about a new best chain
@@ -1578,6 +1604,11 @@ bool CBlock::DisconnectBlock(CValidationState &state, CBlockIndex *pindex, CCoin
     // move best block pointer to prevout block
     view.SetBestBlock(pindex->pprev);
 
+    if(fClean)
+    {
+       g_signals.SyncDisconnectBlock(this); 
+    }
+
     if (pfClean) {
         *pfClean = fClean;
         return true;
@@ -1764,6 +1795,8 @@ bool CBlock::ConnectBlock(CValidationState &state, CBlockIndex* pindex, CCoinsVi
     // Watch for transactions paying to me
     for (unsigned int i=0; i<vtx.size(); i++)
         SyncWithWallets(GetTxHash(i), vtx[i], this, true);
+
+    g_signals.SyncConnectBlock(this, pindex);
 
     return true;
 }

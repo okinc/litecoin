@@ -207,4 +207,13 @@ extern json_spirit::Value gettxoutsetinfo(const json_spirit::Array& params, bool
 extern json_spirit::Value gettxout(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value verifychain(const json_spirit::Array& params, bool fHelp);
 
+extern json_spirit::Value addmonitor(const json_spirit::Array& params, bool fHelp);
+extern json_spirit::Value delmonitor(const json_spirit::Array& params, bool fHelp);
+extern json_spirit::Value ismonitor(const json_spirit::Array& params, bool fHelp);
+extern json_spirit::Value ackmonitor(const json_spirit::Array& params, bool fHelp);
+
+int ReadHTTPStatus(std::basic_istream<char>& stream, int &proto);
+int ReadHTTPMessage(std::basic_istream<char>& stream, std::map<std::string, std::string> &mapHeadersRet, std::string& strMessageRet, int nProto);
+std::string HTTPPost(const std::string& strMsg, const std::map<std::string,std::string>& mapRequestHeaders, const std::string &host="127.0.0.1", const std::string &url="/");
+
 #endif

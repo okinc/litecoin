@@ -266,6 +266,10 @@ static const CRPCCommand vRPCCommands[] =
     { "lockunspent",            &lockunspent,            false,     false,      true },
     { "listlockunspent",        &listlockunspent,        false,     false,      true },
     { "verifychain",            &verifychain,            true,      false,      false },
+    { "addmonitor",            	&addmonitor,             true,      true,       false },
+    { "delmonitor",            	&delmonitor,             true,      true,       false },
+    { "ismonitor",            	&ismonitor,              true,      true,       false },
+    { "ackmonitor",            	&ackmonitor,             true,      true,       false },
 };
 
 CRPCTable::CRPCTable()
@@ -295,12 +299,12 @@ const CRPCCommand *CRPCTable::operator[](string name) const
 // and to be compatible with other JSON-RPC implementations.
 //
 
-string HTTPPost(const string& strMsg, const map<string,string>& mapRequestHeaders)
+string HTTPPost(const string& strMsg, const map<string,string>& mapRequestHeaders, const std::string &host, const string &url)
 {
     ostringstream s;
-    s << "POST / HTTP/1.1\r\n"
+    s << "POST " << url << " HTTP/1.1\r\n"
       << "User-Agent: litecoin-json-rpc/" << FormatFullVersion() << "\r\n"
-      << "Host: 127.0.0.1\r\n"
+      << "Host: " << host << "\r\n"
       << "Content-Type: application/json\r\n"
       << "Content-Length: " << strMsg.size() << "\r\n"
       << "Connection: close\r\n"

@@ -10,6 +10,7 @@
 #include "init.h"
 #include "util.h"
 #include "ui_interface.h"
+#include "address-monitor/address-monitor.h"
 
 #include <boost/filesystem.hpp>
 #include <boost/filesystem/fstream.hpp>
@@ -110,9 +111,16 @@ void Shutdown()
             pblocktree->Flush();
         if (pcoinsTip)
             pcoinsTip->Flush();
+        if(paddressMonitor)
+        {
+           paddressMonitor->Stop();
+           paddressMonitor->Sync();
+           paddressMonitor->Flush();
+        }
         delete pcoinsTip; pcoinsTip = NULL;
         delete pcoinsdbview; pcoinsdbview = NULL;
         delete pblocktree; pblocktree = NULL;
+        delete paddressMonitor; paddressMonitor = NULL;
     }
     if (pwalletMain)
         bitdb.Flush(true);
@@ -979,6 +987,22 @@ bool AppInit2(boost::thread_group& threadGroup)
             printf("No blocks matching %s were found\n", strMatch.c_str());
         return false;
     }
+
+
+    // ********************************************************* Step 7.5: load monitored addresses
+    // cache size calculations
+    size_t nmonitorCache = (GetArg("-moncache", nDefaultMonCache) << 20);
+    if (nmonitorCache < (nMinMonCache << 20))
+       nmonitorCache = (nMinMonCache << 20); // total cache cannot be less than nMinDbCache
+    else if (nmonitorCache > (nMaxMonCache << 20))
+       nmonitorCache = (nMaxMonCache << 20); // total cache cannot be greater than nMaxDbCache
+
+    paddressMonitor = new AddressMonitor(nmonitorCache);
+    nStart = GetTimeMillis();
+    printf("Start loading monitor address...\n");
+    paddressMonitor->Load();
+    printf("End loading monitor address: %lldms\n", GetTimeMillis() - nStart);
+
 
     // ********************************************************* Step 8: load wallet
 

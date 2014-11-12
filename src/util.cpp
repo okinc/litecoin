@@ -1499,3 +1499,50 @@ bool NewThread(void(*pfn)(void*), void* parg)
     }
     return true;
 }
+
+
+
+
+volatile bool fReopenAddrmonLog = false;
+
+static boost::once_flag addrmonPrintInitFlag = BOOST_ONCE_INIT;
+// We use boost::call_once() to make sure these are initialized in
+// in a thread-safe manner the first time it is called:
+static FILE* addrmonout = NULL;
+static boost::mutex* mutexAddrmonLog = NULL;
+
+static void AddrmonPrintInit()
+{
+    assert(addrmonout == NULL);
+    assert(mutexAddrmonLog == NULL);
+
+    boost::filesystem::path pathAddrmon = GetDataDir() / "addrmon.log";
+    addrmonout = fopen(pathAddrmon.string().c_str(), "a");
+    if (addrmonout) setbuf(addrmonout, NULL); // unbuffered
+
+    mutexAddrmonLog = new boost::mutex();
+}
+
+
+bool LogAddrmon(const std::string &str)
+{
+	boost::call_once(&AddrmonPrintInit, addrmonPrintInitFlag);
+
+	if (addrmonout == NULL)
+		return false;
+
+	boost::mutex::scoped_lock scoped_lock(*mutexAddrmonLog);
+
+	// reopen the log file, if requested
+	if (fReopenAddrmonLog) {
+		fReopenAddrmonLog = false;
+		boost::filesystem::path pathAddrmon = GetDataDir() / "addrmon.log";
+		if (freopen(pathAddrmon.string().c_str(), "a", addrmonout) != NULL)
+			setbuf(addrmonout, NULL); // unbuffered
+	}
+
+	int ret = fwrite(str.data(), 1, str.size(), addrmonout);
+
+    return ret == str.size();
+}
+
