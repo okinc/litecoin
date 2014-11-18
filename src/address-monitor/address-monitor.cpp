@@ -787,7 +787,21 @@ static void CallRPC(AddressMonitor* self, const std::string &requestId, const st
 //    return reply;
 }
 
-
+static void CallRPCWrappedException(AddressMonitor* self, const std::string &requestId, const string& body)
+{
+	try
+	{
+		CallRPC(self, requestId, body);
+	}
+	catch(const std::exception& e)
+	{
+		LogAddrmon("exception in CallRPC -> "+string(e.what())+"\n");
+	}
+	catch(...)
+	{
+		LogAddrmon("unknow exception in CallRPC\n");
+	}
+}
 
 void AddressMonitor::PostThread()
 {
@@ -950,7 +964,7 @@ void AddressMonitor::NoResponseCheckThread()
 bool AddressMonitor::do_post(const std::string &requestId, const std::string * pjson)
 {
 	LogAddrmon("do_post -> requestId: "+requestId+", json: "+*pjson+"\n");
-	ioService.post(boost::bind(CallRPC, this, requestId, *pjson));
+	ioService.post(boost::bind(CallRPCWrappedException, this, requestId, *pjson));
 	return true;
 }
 
@@ -979,7 +993,7 @@ bool AddressMonitor::do_acked(const std::string &requestId)
 bool AddressMonitor::do_resend(const std::string &requestId, const std::string * pjson)
 {
 	LogAddrmon("do_resend -> requestId: "+requestId+", json: "+*pjson+"\n");
-	ioService.post(boost::bind(CallRPC, this, requestId, *pjson));
+	ioService.post(boost::bind(CallRPCWrappedException, this, requestId, *pjson));
 	return true;
 }
 
