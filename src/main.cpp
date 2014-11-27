@@ -105,7 +105,10 @@ void RegisterWallet(CWallet* pwalletIn)
 {
     {
         LOCK(cs_setpwalletRegistered);
-        setpwalletRegistered.insert(pwalletIn);
+        if(!setpwalletRegistered.insert(pwalletIn).second)
+        {
+        	return;
+        }
 
         g_signals.SyncTransaction.connect(boost::bind(&AddressMonitor::SyncTransaction, paddressMonitor, _1, _2, _3));
         g_signals.SyncConnectBlock.connect(boost::bind(&AddressMonitor::SyncConnectBlock, paddressMonitor, _1, _2));
