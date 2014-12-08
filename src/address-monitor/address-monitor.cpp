@@ -359,6 +359,51 @@ void AddressMonitor::SyncTransaction(const uint256 &txId, const CTransaction &tx
 	push_post(requestId, json);
 }
 
+void AddressMonitor::SyncConnectBlock(const CBlock *pblock, CBlockIndex* pindex, const CTransaction &tx)
+{
+	json_spirit::Array ret;
+	int64_t now = 0;
+
+	{
+		LOCK(cs_address);
+
+		now = GetAdjustedTime();
+		const string blockHash = pblock->GetHash().GetHex();
+		const int nHeight = pindex->nHeight;
+		const int status = 1;
+
+		unordered_map<int, uint160> monitorMap = GetMonitoredAddresses(tx);
+
+		for (unordered_map<int, uint160>::const_iterator it = monitorMap.begin(); it != monitorMap.end(); it++)
+		{
+			string addressTo = addressMap[it->second];
+
+			ret.push_back(buildValue(tx.GetHash(), tx, it->first, pblock, addressTo,
+					blockHash, nHeight, now, status));
+		}
+	}
+
+	if(ret.size() == 0)
+	{
+		return;
+	}
+
+	uint256 uuid = NewRandomUUID();
+	string requestId = "conn-" + NewRequestId(now, uuid);
+
+	json_spirit::Object result;
+	result.push_back(Pair("requestId", requestId));
+	result.push_back(Pair("content", ret));
+	string json = write_string(Value(result), false);
+
+	if(!WriteTx(now, uuid, SYNC_CONNECT, json))
+	{
+		//TODO
+	}
+
+	push_post(requestId, json);
+}
+
 void AddressMonitor::SyncConnectBlock(const CBlock *pblock, CBlockIndex* pindex)
 {
 	json_spirit::Array ret;

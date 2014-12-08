@@ -121,6 +121,7 @@ public:
     void SyncTransaction(const uint256 &txId, const CTransaction &tx, const CBlock *pblock);
     void SyncConnectBlock(const CBlock *pblock, CBlockIndex* pindex);
     void SyncDisconnectBlock(const CBlock *pblock);
+    void SyncConnectBlock(const CBlock *pblock, CBlockIndex* pindex, const CTransaction &tx);
 
     void Stop();
 

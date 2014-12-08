@@ -22,7 +22,7 @@ using namespace json_spirit;
 // Utilities: convert hex-encoded Values
 // (throws error if not hex).
 //
-uint256 ParseHashV(const Value& v, string strName)
+static uint256 ParseHashV(const Value& v, string strName)
 {
     string strHex;
     if (v.type() == str_type)

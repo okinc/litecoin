@@ -1075,9 +1075,10 @@ bool AppInit2(boost::thread_group& threadGroup)
         RegisterWallet(pwalletMain);
 
         CBlockIndex *pindexRescan = pindexBest;
-        if (GetBoolArg("-rescan"))
+        string rescanStr = GetArg("-rescan", "false");
+        if (rescanStr == "true" || rescanStr == "1")
             pindexRescan = pindexGenesisBlock;
-        else
+        else if(rescanStr == "false" || rescanStr == "0")
         {
             CWalletDB walletdb("wallet.dat");
             CBlockLocator locator;
@@ -1086,6 +1087,18 @@ bool AppInit2(boost::thread_group& threadGroup)
             else
                 pindexRescan = pindexGenesisBlock;
         }
+        else
+		{
+			uint256 blockHash(rescanStr);
+			vector<uint256> vHaveIn;
+			vHaveIn.push_back(blockHash);
+			CBlockLocator locator(vHaveIn);
+			pindexRescan = locator.GetBlockIndex();
+			if(pindexRescan == NULL)
+			{
+				throw runtime_error("can not find block: "+rescanStr);
+			}
+		}
         if (pindexBest && pindexBest != pindexRescan)
         {
             uiInterface.InitMessage(_("Rescanning..."));

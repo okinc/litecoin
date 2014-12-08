@@ -266,3 +266,71 @@ json_spirit::Value ackmonitor(const json_spirit::Array& params, bool fHelp)
     return paddressMonitor->ack(requestId);
 }
 
+
+//
+// Utilities: convert hex-encoded Values
+// (throws error if not hex).
+//
+static uint256 ParseHashV(const Value& v, string strName)
+{
+    string strHex;
+    if (v.type() == str_type)
+        strHex = v.get_str();
+    if (!IsHex(strHex)) // Note: IsHex("") is false
+        throw JSONRPCError(RPC_INVALID_PARAMETER, strName+" must be hexadecimal string (not '"+strHex+"')");
+    uint256 result;
+    result.SetHex(strHex);
+    return result;
+}
+
+json_spirit::Value resynctx(const json_spirit::Array& params, bool fHelp)
+{
+    if (fHelp || params.size() != 1)
+        throw runtime_error(
+            "resynctx \"txId\"\n"
+            "\re-sync a tx.\n"
+            "\nResult\n"
+            "\"bool\"      (string) true if confirms > 0\n"
+            "\nExamples\n"
+        );
+
+    uint256 txId = ParseHashV(params[0], "parameter 1");
+
+    bool fVerbose = false;
+    if (params.size() > 1)
+        fVerbose = (params[1].get_int() != 0);
+
+    CTransaction tx;
+    uint256 hashBlock = 0;
+    if (!GetTransaction(txId, tx, hashBlock, true))
+    {
+        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "No information available about transaction");
+    }
+
+    const bool confirmed = hashBlock == 0;
+
+    LOCK(paddressMonitor->cs_address);
+
+    paddressMonitor->SyncTransaction(txId, tx, NULL);
+    if(confirmed)
+    {
+        if (mapBlockIndex.count(hashBlock) == 0)
+        {
+            throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Block not found");
+        }
+
+        CBlock block;
+        CBlockIndex* pblockindex = mapBlockIndex[hashBlock];
+
+        if(!block.ReadFromDisk(pblockindex))
+        {
+            throw JSONRPCError(RPC_INTERNAL_ERROR, "Can't read block from disk");
+        }
+
+    	paddressMonitor->SyncConnectBlock(&block, pblockindex, tx);
+    }
+
+    return confirmed;
+}
+
+
