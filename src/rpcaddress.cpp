@@ -307,7 +307,7 @@ json_spirit::Value resynctx(const json_spirit::Array& params, bool fHelp)
         throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "No information available about transaction");
     }
 
-    const bool confirmed = hashBlock == 0;
+    const bool confirmed = hashBlock != 0;
 
     LOCK(paddressMonitor->cs_address);
 
