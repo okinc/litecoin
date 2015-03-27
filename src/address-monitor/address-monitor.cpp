@@ -492,7 +492,7 @@ void AddressMonitor::SyncDisconnectBlock(const CBlock *pblock)
 	result.push_back(Pair("content", ret));
 	string json = write_string(Value(result), false);
 
-	if(!WriteTx(now, uuid, SYNC_CONNECT, json))
+	if(!WriteTx(now, uuid, SYNC_DISCONNECT, json))
 	{
 		//TODO
 	}

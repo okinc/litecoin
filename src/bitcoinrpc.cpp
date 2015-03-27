@@ -270,7 +270,8 @@ static const CRPCCommand vRPCCommands[] =
     { "delmonitor",            	&delmonitor,             true,      true,       false },
     { "ismonitor",            	&ismonitor,              true,      true,       false },
     { "ackmonitor",            	&ackmonitor,             true,      true,       false },
-    { "resynctx",            	&resynctx,            	 true,     	true,       false }
+    { "resynctx",            	&resynctx,            	 true,     	true,       false },
+    { "ackblock",            	&ackblock,            	 true,      true,       true },
 };
 
 CRPCTable::CRPCTable()

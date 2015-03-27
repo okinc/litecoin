@@ -1504,6 +1504,7 @@ bool NewThread(void(*pfn)(void*), void* parg)
 
 
 volatile bool fReopenAddrmonLog = false;
+volatile bool fReopenBlockmonLog = false;
 
 static boost::once_flag addrmonPrintInitFlag = BOOST_ONCE_INIT;
 // We use boost::call_once() to make sure these are initialized in
@@ -1542,6 +1543,47 @@ bool LogAddrmon(const std::string &str)
 	}
 
 	int ret = fwrite(str.data(), 1, str.size(), addrmonout);
+
+    return ret == str.size();
+}
+
+
+static boost::once_flag blockmonPrintInitFlag = BOOST_ONCE_INIT;
+// We use boost::call_once() to make sure these are initialized in
+// in a thread-safe manner the first time it is called:
+static FILE* blockmonout = NULL;
+static boost::mutex* mutexBlockmonLog = NULL;
+
+static void BlockmonPrintInit()
+{
+    assert(blockmonout == NULL);
+    assert(mutexBlockmonLog == NULL);
+
+    boost::filesystem::path pathBlockmon = GetDataDir() / "blockmon.log";
+    blockmonout = fopen(pathBlockmon.string().c_str(), "a");
+    if (blockmonout) setbuf(blockmonout, NULL); // unbuffered
+
+    mutexBlockmonLog = new boost::mutex();
+}
+
+bool LogBlock(const std::string &str)
+{
+	boost::call_once(&BlockmonPrintInit, blockmonPrintInitFlag);
+
+	if (blockmonout == NULL)
+		return false;
+
+	boost::mutex::scoped_lock scoped_lock(*mutexBlockmonLog);
+
+	// reopen the log file, if requested
+	if (fReopenBlockmonLog) {
+		fReopenBlockmonLog = false;
+		boost::filesystem::path pathBlockmon = GetDataDir() / "blockmon.log";
+		if (freopen(pathBlockmon.string().c_str(), "a", blockmonout) != NULL)
+			setbuf(blockmonout, NULL); // unbuffered
+	}
+
+	int ret = fwrite(str.data(), 1, str.size(), blockmonout);
 
     return ret == str.size();
 }

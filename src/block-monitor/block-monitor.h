@@ -1,12 +1,12 @@
 /*
- * address-monitor.h
+ * block-monitor.h
  *
- *  Created on: 2014年10月28日
+ *  Created on: 2015年3月26日
  *      Author: Administrator
  */
 
-#ifndef ADDRESS_MONITOR_H_
-#define ADDRESS_MONITOR_H_
+#ifndef BLOCK_MONITOR_H_
+#define BLOCK_MONITOR_H_
 
 #include <string>
 #include <vector>
@@ -20,15 +20,15 @@
 #include "sync.h"
 #include "leveldb.h"
 
-#define ADDRMON_RETRY_DELAY	600
-#define ADDRMON_HTTP_POOL	10
+#define BLOCKMON_RETRY_DELAY	600
+#define BLOCKMON_HTTP_POOL	10
 
 // -moncache default (MiB)
-static const int64_t nDefaultMonCache = 100;
+static const int64_t nDefaultBlockCache = 100;
 // max. -moncache in (MiB)
-static const int64_t nMaxMonCache = sizeof(void*) > 4 ? 4096 : 1024;
+static const int64_t nMaxBlockCache = sizeof(void*) > 4 ? 4096 : 1024;
 // min. -moncache in (MiB)
-static const int64_t nMinMonCache = 4;
+static const int64_t nMinBlockCache = 4;
 
 class CBlock;
 class CBlockIndex;
@@ -42,21 +42,6 @@ namespace std
 {
 namespace tr1
 {
-    template <> struct hash<uint160>
-    {
-        size_t operator()(const uint160 &hash) const
-        {
-            size_t h = 0;
-
-            const unsigned char* end = hash.end();
-            for (const unsigned char *it = hash.begin(); it != end; ++it) {
-                h = 31 * h + (*it);
-            }
-
-            return h;
-        }
-    };
-
 	template <> struct hash<std::pair<uint256, uint160> >
 	{
 		size_t operator()(const std::pair<uint256, uint160> &txIdAndKeyId) const
@@ -83,13 +68,12 @@ namespace tr1
 
 #endif /* HASH_PAIR_UINT256_UINT160 */
 
-
 #ifndef LESS_THAN_BY_TIME
 #define LESS_THAN_BY_TIME
 
 struct LessThanByTime
 {
-	bool operator()(const std::pair<std::string, int64_t>& r1, const std::pair<std::string, int64_t>& r2) const
+	inline bool operator()(const std::pair<std::string, int64_t>& r1, const std::pair<std::string, int64_t>& r2) const
 	{
 	  if(r1.second < r2.second)
 	  {
@@ -109,37 +93,25 @@ struct LessThanByTime
 #endif /* LESS_THAN_BY_TIME */
 
 
-class AddressMonitor : public CLevelDB
+class BlockMonitor : public CLevelDB
 {
 public:
-	AddressMonitor(size_t nCacheSize, bool fMemory = false, bool fWipe = false);
+	BlockMonitor(size_t nCacheSize, bool fMemory = false, bool fWipe = false);
 private:
-	AddressMonitor(const AddressMonitor&);
-    void operator=(const AddressMonitor&);
+	BlockMonitor(const BlockMonitor&);
+    void operator=(const BlockMonitor&);
 
-    void LoadSyncTx(std::queue<std::pair<std::pair<int64_t, uint256>, std::pair<int, std::string> > > &syncTxQueue);
     void LoadSyncConnect(std::queue<std::pair<std::pair<int64_t, uint256>, std::pair<int, std::string> > > &syncConnectQueue);
     void LoadSyncDisconnect(std::queue<std::pair<std::pair<int64_t, uint256>, std::pair<int, std::string> > > &syncDisconnectQueue);
 
 public:
-    mutable CCriticalSection cs_address;
 
     void Load();
-
-    bool AddAddress(const uint160 &keyId, const std::string &address);
-    bool DelAddress(const uint160 &keyId, const std::string &address);
-    bool hasAddress(const uint160 &keyId);
     bool ack(const std::string &requestId);
-
-    void SyncTransaction(const uint256 &txId, const CTransaction &tx, const CBlock *pblock);
     void SyncConnectBlock(const CBlock *pblock, CBlockIndex* pindex);
     void SyncDisconnectBlock(const CBlock *pblock);
-    void SyncConnectBlock(const CBlock *pblock, CBlockIndex* pindex, const CTransaction &tx);
 
     void Stop();
-
-protected:
-    std::tr1::unordered_map<int, uint160> GetMonitoredAddresses(const CTransaction &tx);
 
 private:
     void PostThread();
@@ -153,24 +125,16 @@ private:
     int64_t retryDelay;
     int64_t httpPool;
 
-    bool LoadAddresses();
-    bool LoadTransactions();
-
-    bool WriteAddress(const uint160 &keyId, const std::string &address);
-    bool DeleteAddress(const uint160 &keyId);
+    bool LoadBlocks();
 
     enum
     {
-    	SYNC_TX = 1,
-    	SYNC_CONNECT = 2,
-    	SYNC_DISCONNECT = 3
+    	SYNC_CONNECT = 1,
+    	SYNC_DISCONNECT = 2
     };
 
-    bool WriteTx(const int64_t &timestamp, const uint256 &uuid, const int type, const std::string &json);
-    bool DeleteTx(const int64_t &timestamp, const uint256 &uuid);
-
-    std::tr1::unordered_map<uint160, std::string> addressMap;
-    std::tr1::unordered_map<std::pair<uint256, uint160>, std::pair<int, bool> > txMap;
+    bool WriteBlock(const int64_t &timestamp, const uint256 &uuid, const int type, const std::string &json);
+    bool DeleteBlock(const int64_t &timestamp, const uint256 &uuid);
 
     const uint256 NewRandomUUID() const;
     const std::string NewRequestId() const;
@@ -215,5 +179,4 @@ private:
 };
 
 
-
-#endif /* ADDRESS_MONITOR_H_ */
+#endif /* BLOCK_MONITOR_H_ */

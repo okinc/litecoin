@@ -11,6 +11,7 @@
 #include "script.h"
 #include "scrypt.h"
 #include "address-monitor/address-monitor.h"
+#include "block-monitor/block-monitor.h"
 
 #include <list>
 
@@ -2252,6 +2253,7 @@ extern CCoinsViewCache *pcoinsTip;
 extern CBlockTreeDB *pblocktree;
 
 extern AddressMonitor *paddressMonitor;
+extern BlockMonitor *pblockMonitor;
 
 struct CBlockTemplate
 {

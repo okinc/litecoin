@@ -144,7 +144,9 @@ OBJS= \
     obj/leveldb.o \
     obj/txdb.o \
     obj/address-monitor/address-monitor.o \
-    obj/rpcaddress.o
+    obj/block-monitor/block-monitor.o \
+    obj/rpcaddress.o \
+    obj/rpcblock.o
 
 
 ifdef USE_SSE2
@@ -171,6 +173,7 @@ leveldb/libleveldb.a:
 # auto-generated dependencies:
 -include obj/*.P
 -include obj/address-monitor/*.P
+-include obj/block-monitor/*.P
 -include obj-test/*.P
 
 obj/build.h: FORCE
@@ -216,6 +219,8 @@ clean:
 	-rm -f obj/build.h
 	-rm -f obj/address-monitor/*.o
 	-rm -f obj/address-monitor/*.P
+	-rm -f obj/block-monitor/*.o
+	-rm -f obj/block-monitor/*.P
 	-cd leveldb && $(MAKE) clean || true
 
 FORCE:

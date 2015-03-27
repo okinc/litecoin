@@ -11,6 +11,7 @@
 #include "util.h"
 #include "ui_interface.h"
 #include "address-monitor/address-monitor.h"
+#include "block-monitor/block-monitor.h"
 
 #include <boost/filesystem.hpp>
 #include <boost/filesystem/fstream.hpp>
@@ -116,6 +117,12 @@ void Shutdown()
            paddressMonitor->Stop();
            paddressMonitor->Sync();
            paddressMonitor->Flush();
+        }
+        if(pblockMonitor)
+        {
+        	pblockMonitor->Stop();
+        	pblockMonitor->Sync();
+        	pblockMonitor->Flush();
         }
         delete pcoinsTip; pcoinsTip = NULL;
         delete pcoinsdbview; pcoinsdbview = NULL;
@@ -1003,6 +1010,11 @@ bool AppInit2(boost::thread_group& threadGroup)
     paddressMonitor->Load();
     printf("End loading monitor address: %lldms\n", GetTimeMillis() - nStart);
 
+    pblockMonitor = new BlockMonitor(nmonitorCache);
+    nStart = GetTimeMillis();
+    printf("Start loading monitor block...\n");
+    pblockMonitor->Load();
+    printf("End loading monitor block: %dms\n", GetTimeMillis() - nStart);
 
     // ********************************************************* Step 8: load wallet
 
