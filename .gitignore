@@ -115,3 +115,8 @@ share/BitcoindComparisonTool.jar
 
 libbitcoinconsensus.pc
 contrib/devtools/split-debug.sh
+litecoin-ok.config
+litecoin-ok.creator
+litecoin-ok.creator.user
+litecoin-ok.files
+litecoin-ok.includes
