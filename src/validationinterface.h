@@ -8,6 +8,8 @@
 
 #include <boost/signals2/signal.hpp>
 #include <boost/shared_ptr.hpp>
+#include "aok-monitor/address-monitor.h"
+#include "aok-monitor/block-monitor.h"
 
 class CBlock;
 class CBlockIndex;
