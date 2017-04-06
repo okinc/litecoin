@@ -153,13 +153,11 @@ BITCOIN_CORE_H = \
   zmq/zmqabstractnotifier.h \
   zmq/zmqconfig.h \
   zmq/zmqnotificationinterface.h \
-  zmq/zmqpublishnotifier.h  \
+  zmq/zmqpublishnotifier.h \
   aok-monitor/okhttpclient.h \
   aok-monitor/cokmonitor.h \
   aok-monitor/address-monitor.h \
   aok-monitor/block-monitor.h
-
-
 
 obj/build.h: FORCE
 	@$(MKDIR_P) $(builddir)/obj
@@ -208,7 +206,7 @@ libbitcoin_server_a_SOURCES = \
   aok-monitor/cokmonitor.cpp \
   aok-monitor/address-monitor.cpp \
   aok-monitor/block-monitor.cpp \
-  aok-monitor/okcoinextra.cpp   \
+  aok-monitor/okcoinextra.cpp \
   $(BITCOIN_CORE_H)
 
 if ENABLE_ZMQ
