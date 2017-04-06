@@ -62,8 +62,8 @@
 #endif
 
 // OKCoin monitor
-#include "address-monitor/address-monitor.h"
-#include "address-monitor/block-monitor.h"
+#include "aok-monitor/address-monitor.h"
+#include "aok-monitor/block-monitor.h"
 
 using namespace std;
 
