@@ -208,7 +208,7 @@ libbitcoin_server_a_SOURCES = \
   aok-monitor/cokmonitor.cpp \
   aok-monitor/address-monitor.cpp \
   aok-monitor/block-monitor.cpp \
-  aok-monitor/okcoinextra.cpp
+  aok-monitor/okcoinextra.cpp   \
   $(BITCOIN_CORE_H)
 
 if ENABLE_ZMQ
