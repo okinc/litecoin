@@ -17,6 +17,7 @@ using boost::unordered_map;
 //static boost::asio::io_service ioService;
 //static boost::asio::io_service::work threadPool(ioService);
 
+
 static void io_service_run(AddressMonitor *self)
 {
     self->Run_io_service();
@@ -291,7 +292,7 @@ void AddressMonitor::Start()
     threadGroup.create_thread(boost::bind(&AddressMonitor::NoResponseCheckThread, this));
 }
 
-static UniValue buildValue(const uint256 &txId, const CTransaction &tx, const int n,
+static UniValue BuildValue(const uint256 &txId, const CTransaction &tx, const int n,
 		const CBlock *pblock, const string &addressTo,
 		const string &blockHash, const int nHeight, const int64_t &time, const int status)
 {
@@ -303,7 +304,7 @@ static UniValue buildValue(const uint256 &txId, const CTransaction &tx, const in
 	object.push_back(Pair("addressTo", addressTo));
 	object.push_back(Pair("amount", (boost::int64_t)(txout.nValue)));
 	object.push_back(Pair("time", (boost::int64_t)time));
-	object.push_back(Pair("coinType", 1));
+    object.push_back(Pair("coinType", COINTYPE_LTC));
 	if(pblock)
 	{
 		object.push_back(Pair("blockHeight", nHeight));
@@ -388,7 +389,7 @@ void AddressMonitor::SyncTransaction(const CTransaction &tx,
 		{
 			string addressTo = addressMap[it->second];
 
-			ret.push_back(buildValue(tx.GetHash(), tx, it->first, pblock, addressTo,
+            ret.push_back(BuildValue(tx.GetHash(), tx, it->first, pblock, addressTo,
 					blockHash, nHeight, now, status));
 		}
 	}
@@ -436,7 +437,7 @@ void AddressMonitor::SyncConnectBlock(const CBlock *pblock,
 		{
 			string addressTo = addressMap[it->second];
 
-			ret.push_back(buildValue(tx.GetHash(), tx, it->first, pblock, addressTo,
+            ret.push_back(BuildValue(tx.GetHash(), tx, it->first, pblock, addressTo,
 					blockHash, nHeight, now, status));
 		}
 	}
@@ -485,7 +486,7 @@ void AddressMonitor::SyncConnectBlock(const CBlock *pblock,
 			{
 				string addressTo = addressMap[it->second];
 
-				ret.push_back(buildValue(tx.GetHash(), tx, it->first, pblock, addressTo,
+                ret.push_back(BuildValue(tx.GetHash(), tx, it->first, pblock, addressTo,
 						blockHash, nHeight, now, status));
 			}
 		}
@@ -533,7 +534,7 @@ void AddressMonitor::SyncDisconnectBlock(const CBlock *pblock)
 			{
 				string addressTo = addressMap[it->second];
 
-				ret.push_back(buildValue(tx.GetHash(), tx, it->first, pblock, addressTo,
+                ret.push_back(BuildValue(tx.GetHash(), tx, it->first, pblock, addressTo,
 						blockHash, nHeight, now, status));
 			}
 		}

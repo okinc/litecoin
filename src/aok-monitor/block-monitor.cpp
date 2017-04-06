@@ -40,7 +40,7 @@ static UniValue BuildValue(const CBlock *pblock,
      UniValue object(UniValue::VOBJ);
 
     object.push_back(Pair("time", time));
-    object.push_back(Pair("coinType", 1));
+    object.push_back(Pair("coinType", COINTYPE_LTC));
     if(pblock)
     {
         object.push_back(Pair("blockHeight", nHeight));

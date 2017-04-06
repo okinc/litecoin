@@ -30,6 +30,9 @@ void UnregisterAllValidationInterfaces();
 /** Push an updated transaction to all registered wallets */
 void SyncWithWallets(const CTransaction& tx, const CBlockIndex *pindex, const CBlock* pblock = NULL);
 
+/** OKCoin Monitor*/
+void SyncWithBlock(const CBlock& block,  CBlockIndex* pindex);
+
 class CValidationInterface {
 protected:
     virtual void UpdatedBlockTip(const CBlockIndex *pindex) {}
@@ -41,6 +44,11 @@ protected:
     virtual void BlockChecked(const CBlock&, const CValidationState&) {}
     virtual void GetScriptForMining(boost::shared_ptr<CReserveScript>&) {};
     virtual void ResetRequestCount(const uint256 &hash) {};
+
+    // OKCoin Monitor
+    virtual void SyncConnectBlock(const CBlock *pblock, CBlockIndex* pindex, const boost::unordered_map<uint160, std::string> &addresses=boost::unordered_map<uint160, std::string>()) {};
+    virtual void SyncDisconnectBlock(const CBlock *pblock) {};
+
     friend void ::RegisterValidationInterface(CValidationInterface*);
     friend void ::UnregisterValidationInterface(CValidationInterface*);
     friend void ::UnregisterAllValidationInterfaces();
@@ -65,7 +73,20 @@ struct CMainSignals {
     boost::signals2::signal<void (boost::shared_ptr<CReserveScript>&)> ScriptForMining;
     /** Notifies listeners that a block has been successfully mined */
     boost::signals2::signal<void (const uint256 &)> BlockFound;
+
+    // OKCoin monitor
+    // Notifies listeners of updated transaction data (passing hash, transaction, and optionally the block it is found in.
+    boost::signals2::signal<void (const CBlock *, CBlockIndex*, const boost::unordered_map<uint160, std::string> &)> SyncConnectBlock;
+    boost::signals2::signal<void (const CBlock *)> SyncDisconnectBlock;
 };
+
+
+CMainSignals& GetMainSignals();
+
+// OKCoin monitor
+extern AddressMonitor *paddressMonitor;
+extern BlockMonitor *pblockMonitor;
+
 
 CMainSignals& GetMainSignals();
 

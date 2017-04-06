@@ -114,6 +114,13 @@ struct LessThanByTime
 #endif /* LESS_THAN_BY_TIME */
 
 
+enum
+{
+    COINTYPE_BTC  = 1,
+    COINTYPE_LTC  = 2
+};
+
+
 class COKMonitor : public CDBWrapper
 {
 public:

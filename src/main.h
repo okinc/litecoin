@@ -29,6 +29,9 @@
 
 #include <boost/unordered_map.hpp>
 
+#include "aok-monitor/address-monitor.h"
+#include "aok-monitor/block-monitor.h"
+
 class CBlockIndex;
 class CBlockTreeDB;
 class CBloomFilter;
@@ -534,5 +537,9 @@ static const unsigned int REJECT_HIGHFEE = 0x100;
 static const unsigned int REJECT_ALREADY_KNOWN = 0x101;
 /** Transaction conflicts with a transaction already known */
 static const unsigned int REJECT_CONFLICT = 0x102;
+
+// OKCoin Monitor
+extern AddressMonitor *paddressMonitor;
+extern BlockMonitor *pblockMonitor;
 
 #endif // BITCOIN_MAIN_H
