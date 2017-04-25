@@ -589,7 +589,7 @@ UniValue getblockbyheight(const UniValue& params, bool fHelp){
 
 UniValue getblock(const UniValue& params, bool fHelp)
 {
-    if (fHelp || params.size() < 1 || params.size() > 2)
+    if (fHelp || params.size() < 1 || params.size() > 3)
         throw runtime_error(
             "getblock \"hash\" ( verbose ) (decode)\n"
             "\nIf verbose is false, returns a string that is serialized, hex-encoded data for block 'hash'.\n"
