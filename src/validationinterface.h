@@ -8,6 +8,7 @@
 
 #include <boost/signals2/signal.hpp>
 #include <boost/shared_ptr.hpp>
+#include "block-monitor/okblockchain-monitor.h"
 
 class CBlock;
 class CBlockIndex;
@@ -27,8 +28,13 @@ void RegisterValidationInterface(CValidationInterface* pwalletIn);
 void UnregisterValidationInterface(CValidationInterface* pwalletIn);
 /** Unregister all wallets from core */
 void UnregisterAllValidationInterfaces();
+
 /** Push an updated transaction to all registered wallets */
-void SyncWithWallets(const CTransaction& tx, const CBlockIndex *pindex, const CBlock* pblock = NULL);
+// add pfrom and fConflicted by oklink
+void SyncWithWallets(const CTransaction& tx, const CBlockIndex *pindex, const CBlock* pblock = NULL, CNode *pfrom = NULL,  bool fConflicted = false);
+/** add by oklink*/
+void SyncWithBlock(const CBlock& block,  CBlockIndex* pindex,  CNode *pfrom = NULL);
+
 
 class CValidationInterface {
 protected:
@@ -50,7 +56,7 @@ struct CMainSignals {
     /** Notifies listeners of updated block chain tip */
     boost::signals2::signal<void (const CBlockIndex *)> UpdatedBlockTip;
     /** Notifies listeners of updated transaction data (transaction, and optionally the block it is found in. */
-    boost::signals2::signal<void (const CTransaction &, const CBlockIndex *pindex, const CBlock *)> SyncTransaction;
+    boost::signals2::signal<void (const CTransaction &, const CBlockIndex *, const CBlock *, CNode *, bool)> SyncTransaction;
     /** Notifies listeners of an updated transaction without new data (for now: a coinbase potentially becoming visible). */
     boost::signals2::signal<void (const uint256 &)> UpdatedTransaction;
     /** Notifies listeners of a new active block chain. */
@@ -65,8 +71,16 @@ struct CMainSignals {
     boost::signals2::signal<void (boost::shared_ptr<CReserveScript>&)> ScriptForMining;
     /** Notifies listeners that a block has been successfully mined */
     boost::signals2::signal<void (const uint256 &)> BlockFound;
+
+    //add by oklink
+     // Notifies listeners of updated transaction data (passing hash, transaction, and optionally the block it is found in.
+     boost::signals2::signal<void (const CBlock *, CBlockIndex*, CNode *)> SyncConnectBlock;
+     boost::signals2::signal<void (const CBlock *)> SyncDisconnectBlock;
 };
 
 CMainSignals& GetMainSignals();
+/** add by oklink */
+extern COKBlockChainMonitor *pOkBlkMonitor;
+
 
 #endif // BITCOIN_VALIDATIONINTERFACE_H

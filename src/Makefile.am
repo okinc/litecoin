@@ -9,6 +9,17 @@ AM_CXXFLAGS = $(HARDENED_CXXFLAGS)
 AM_CPPFLAGS = $(HARDENED_CPPFLAGS)
 EXTRA_LIBRARIES =
 
+#mysq linux下路径
+MYSQL_CLIENT_PATH = /usr/lib64/mysql
+MYSQL_CONN_PATH = /usr/lib64
+#mysq mac下路径
+#MYSQL_CLIENT_PATH = /usr/local/mysql/lib
+#MYSQL_CONN_PATH = /usr/local/lib
+
+
+LIBMYSQL = $(MYSQL_CONN_PATH)/libmysqlcppconn.so $(MYSQL_CLIENT_PATH)/libmysqlclient.so
+
+
 if EMBEDDED_UNIVALUE
 LIBUNIVALUE = univalue/libunivalue.la
 
@@ -100,6 +111,7 @@ BITCOIN_CORE_H = \
   httpserver.h \
   indirectmap.h \
   init.h \
+  leveldbwrapper.h \
   key.h \
   keystore.h \
   dbwrapper.h \
@@ -174,6 +186,7 @@ libbitcoin_server_a_SOURCES = \
   httprpc.cpp \
   httpserver.cpp \
   init.cpp \
+  leveldbwrapper.cpp \
   dbwrapper.cpp \
   main.cpp \
   merkleblock.cpp \
@@ -197,6 +210,12 @@ libbitcoin_server_a_SOURCES = \
   txdb.cpp \
   txmempool.cpp \
   ui_interface.cpp \
+  mysql_wrapper/mysql_connpool.h \
+  mysql_wrapper/okcoin_log.h \
+  block-monitor/okblockchain-monitor.h \
+  mysql_wrapper/mysql_connpool.cpp \
+  mysql_wrapper/okcoin_log.cpp \
+  block-monitor/okblockchain-monitor.cpp \
   validationinterface.cpp \
   versionbits.cpp \
   $(BITCOIN_CORE_H)
@@ -361,7 +380,7 @@ litecoind_LDADD = \
   $(LIBMEMENV) \
   $(LIBSECP256K1)
 
-litecoind_LDADD += $(BOOST_LIBS) $(BDB_LIBS) $(SSL_LIBS) $(CRYPTO_LIBS) $(MINIUPNPC_LIBS) $(EVENT_PTHREADS_LIBS) $(EVENT_LIBS) $(ZMQ_LIBS)
+litecoind_LDADD += $(BOOST_LIBS) $(BDB_LIBS) $(SSL_LIBS) $(CRYPTO_LIBS) $(MINIUPNPC_LIBS) $(EVENT_PTHREADS_LIBS) $(EVENT_LIBS) $(ZMQ_LIBS) $(LIBMYSQL)
 
 # bitcoin-cli binary #
 litecoin_cli_SOURCES = bitcoin-cli.cpp
